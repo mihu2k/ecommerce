@@ -12,6 +12,33 @@ import { addCart, getProduct } from '../redux/actions';
 // Commons
 import { formatNumber, kFormatter, numberToCurrency } from '../common';
 
+const thumbnails = [
+  {
+    img: 'https://cf.shopee.vn/file/fb88c4d2fe9fc3dde588549715852ce3_tn',
+  },
+  {
+    img: 'https://cf.shopee.vn/file/eb593f3020195bc2a7b23439162328de_tn',
+  },
+  {
+    img: 'https://cf.shopee.vn/file/fb88c4d2fe9fc3dde588549715852ce3_tn',
+  },
+  {
+    img: 'https://cf.shopee.vn/file/eb593f3020195bc2a7b23439162328de_tn',
+  },
+  {
+    img: 'https://cf.shopee.vn/file/fb88c4d2fe9fc3dde588549715852ce3_tn',
+  },
+  {
+    img: 'https://cf.shopee.vn/file/eb593f3020195bc2a7b23439162328de_tn',
+  },
+  {
+    img: 'https://cf.shopee.vn/file/fb88c4d2fe9fc3dde588549715852ce3_tn',
+  },
+  {
+    img: 'https://cf.shopee.vn/file/eb593f3020195bc2a7b23439162328de_tn',
+  },
+];
+
 export const ProductDetail = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
@@ -20,8 +47,13 @@ export const ProductDetail = () => {
     cart,
   } = useSelector((state) => state);
 
+  // Refs
+  const wrapImgRef = React.useRef();
+
   // States
   const [quantityProduct, setQuantityProduct] = React.useState(1);
+  const [activeImg, setActiveImg] = React.useState(0);
+  const [idxSlider, setIdxSlider] = React.useState(0);
 
   const handleAddToCart = () => {
     // handle spam click add to cart
@@ -34,10 +66,45 @@ export const ProductDetail = () => {
       setQuantityProduct(e.target.value === '' ? 1 : e.target.value);
   };
 
+  // let idxSlider = 0;
+  // const handleClickSlider = (type) => {
+  //   if (thumbnails <= 5) return;
+  //   if (type === 'prev') {
+  //     if (idxSlider <= 0) return;
+  //     idxSlider--;
+  //     console.log(idxSlider);
+  //   }
+  //   if (type === 'next') {
+  //     if (thumbnails.length - idxSlider > 5) idxSlider++;
+  //     console.log(idxSlider);
+  //   }
+  //   wrapImgRef.current.style.transform = `translateX(${idxSlider * -20}%)`;
+  // };
+  const handleClickSlider = (type) => {
+    if (thumbnails <= 5) return;
+    if (type === 'prev') {
+      if (idxSlider <= 0) return;
+      // idxSlider--;
+      setIdxSlider(idxSlider - 1);
+      console.log(idxSlider);
+    }
+    if (type === 'next') {
+      if (thumbnails.length - idxSlider > 5)
+        // idxSlider++;
+        setIdxSlider(idxSlider + 1);
+      console.log(idxSlider);
+    }
+    setIdxSlider((prevState) => {
+      wrapImgRef.current.style.transform = `translateX(${prevState * -20}%)`;
+      return prevState;
+    });
+    // wrapImgRef.current.style.transform = `translateX(${idxSlider * -20}%)`;
+  };
+
   React.useEffect(() => {
     dispatch(getProduct(id));
   }, [dispatch, id]);
-  console.log(cart, 'CART');
+  // console.log(cart, 'CART');
 
   return (
     <div className='pt-6'>
@@ -51,26 +118,51 @@ export const ProductDetail = () => {
               }}
             />
             <div className='relative my-2'>
+              <span
+                className='absolute top-1/2 transform -translate-y-1/2 px-1 py-[6px] bg-[#00000033] cursor-pointer z-[1]'
+                onClick={() => handleClickSlider('prev')}
+              >
+                <i className='fas fa-chevron-left text-xl text-white' />
+              </span>
+              <span
+                className='absolute top-1/2 right-0 transform -translate-y-1/2 px-1 py-[6px] bg-[#00000033] cursor-pointer z-[1]'
+                onClick={() => handleClickSlider('next')}
+              >
+                <i className='fas fa-chevron-right text-xl text-white' />
+              </span>
               <div className='w-full overflow-hidden'>
-                <div className='flex ml-[-5px]'>
-                  <div
-                    className='p-[5px] inline-block border-2 border-primary ml-[5px] cursor-pointer'
-                    style={{
-                      flexBasis: 'calc(20% - 5px)',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <img
-                      src='https://cf.shopee.vn/file/fb88c4d2fe9fc3dde588549715852ce3_tn'
-                      alt=''
-                      className='w-full'
-                    />
-                  </div>
+                <div
+                  className='flex ml-[-5px]'
+                  ref={wrapImgRef}
+                  style={{ transition: '0.4s' }}
+                >
+                  {thumbnails.map((thumbnail, index) => (
+                    <div
+                      key={index}
+                      className={`p-[5px] inline-block ml-[5px] cursor-pointer border-2 ${
+                        activeImg === index
+                          ? 'border-primary'
+                          : 'border-transparent'
+                      }`}
+                      style={{
+                        flexBasis: 'calc(20% - 5px)',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <img
+                        src={thumbnail.img}
+                        alt=''
+                        className='w-full'
+                        onMouseEnter={() => setActiveImg(index)}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
         </div>
+
         <div className='flex-grow pt-5 pl-5 pr-9'>
           <Truncate tag='div' line={2}>
             <span className='inline-block text-white bg-primary text-xs px-1 py-[1px] rounded-sm transform translate-y-[-2px] mr-3'>
